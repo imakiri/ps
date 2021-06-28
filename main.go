@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/imakiri/ps/actor"
 	"github.com/imakiri/ps/barrier"
 	"github.com/imakiri/ps/particle"
+	"github.com/imakiri/ps/reactor"
 	"github.com/imakiri/ps/trace"
 	"github.com/imakiri/ps/vector"
 	"github.com/lucasb-eyer/go-colorful"
@@ -17,20 +17,21 @@ import (
 
 const c float64 = 0.01
 
-var g float64 = math.Sqrt(2*c) * 100000000
+var g float64 = math.Sqrt(2*c) * 50000
 var l float64 = -math.Sqrt(2 * c)
 
 type sandbox struct {
-	particle *particle.Particle
+	particle *particle.GravityParticle
 	barriers []barrier.Barrier
 	path     *trace.Trace
-	actor.Actor
+	reactor.Reactor
 }
 
 func (s *sandbox) tick() {
 	s.path.Push(s.particle.Position)
-	s.particle.Fly(c)
-	s.Act(s.particle, s.barriers)
+	s.particle.React(c, g)
+	s.particle.Act(c)
+	//s.React(s.particle, s.barriers)
 }
 
 const screenWidth = 1280
@@ -66,9 +67,12 @@ func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 
 	var s = &sandbox{
-		particle: &particle.Particle{
-			Position: &vector.Vector{640, 180},
-			Velocity: &vector.Vector{120, -80},
+		particle: &particle.GravityParticle{
+			Particle: particle.Particle{
+				Position: &vector.Vector{640, 180},
+				Velocity: &vector.Vector{120, -80},
+			},
+			Attractor: &vector.Vector{640, 360},
 		},
 		barriers: []barrier.Barrier{
 			{&vector.Vector{0, 0}, &vector.Vector{screenWidth, 0}},
@@ -83,7 +87,7 @@ func main() {
 		path: trace.NewTrace(500),
 	}
 
-	s.Actor = actor.NewGravityPointActor(g, c, &vector.Vector{640, 360})
+	s.Reactor = reactor.NewGravityPointReactor(g, c, &vector.Vector{640, 360})
 
 	if err := ebiten.RunGame(s); err != nil {
 		log.Fatal(err)

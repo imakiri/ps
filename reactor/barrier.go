@@ -1,4 +1,4 @@
-package actor
+package reactor
 
 import (
 	"github.com/imakiri/ps/barrier"
@@ -9,7 +9,7 @@ type b struct {
 	collisionFactors [][2]float64
 }
 
-func (i *b) Act(p *particle.Particle, bs []barrier.Barrier) {
+func (i *b) Reactor(p *particle.Particle, bs []barrier.Barrier) {
 	var cf [2]float64
 	for j := range bs {
 		cf[0], cf[1] = bs[j].Collision(p.Position)
@@ -21,7 +21,7 @@ func (i *b) Act(p *particle.Particle, bs []barrier.Barrier) {
 	}
 }
 
-func NewBarrierActor(particle *particle.Particle, barriers []barrier.Barrier) Actor {
+func NewBarrierReactor(particle *particle.Particle, barriers []barrier.Barrier) Reactor {
 	var i = new(b)
 	i.collisionFactors = make([][2]float64, len(barriers))
 
